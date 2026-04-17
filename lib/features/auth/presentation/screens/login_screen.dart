@@ -1,22 +1,23 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/network/firebase_service.dart';
+import '../provider/auth_provider.dart';
 import 'register_screen.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
- bool _loading = false;
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -41,21 +42,37 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _loading = true);
+
     try {
-      await AuthService.signIn(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
-    } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
-      _showError(_mapAuthError(e));
+      await 
+         ref .read(authControllerProvider.notifier)
+          .login(_emailController.text.trim(), _passwordController.text);
     } catch (e) {
-      if (!mounted) return;
       _showError(e.toString());
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
+
+  // Future<void> _submit() async {
+  //   if (!_formKey.currentState!.validate()) return;
+
+  //   setState(() => _loading = true);
+  //   try {
+  //     await AuthService.signIn(
+  //       email: _emailController.text.trim(),
+  //       password: _passwordController.text,
+  //     );
+  //   } on FirebaseAuthException catch (e) {
+  //     if (!mounted) return;
+  //     _showError(_mapAuthError(e));
+  //   } catch (e) {
+  //     if (!mounted) return;
+  //     _showError(e.toString());
+  //   } finally {
+  //     if (mounted) setState(() => _loading = false);
+  //   }
+  // }
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -156,10 +173,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       validator: _validatePassword,
                     ),
-                    
+
                     const SizedBox(height: 8),
                     FilledButton(
-                    onPressed: _loading ? null : _submit,
+                      onPressed: _loading ? null : _submit,
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(52),
                         shape: RoundedRectangleBorder(
@@ -167,7 +184,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
 
-                      
                       child: _loading
                           ? SizedBox(
                               width: 22,
