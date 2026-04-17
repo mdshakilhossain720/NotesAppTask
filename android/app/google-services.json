@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "224476748736",
+    "project_id": "noteapptask",
+    "storage_bucket": "noteapptask.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:224476748736:android:09ab867c22615566204625",
+        "android_client_info": {
+          "package_name": "com.noteapp.task"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHsh7WAdUGiw-B5AeHW5IxaBvaxKtJI7M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
