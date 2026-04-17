@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/network/firebase_service.dart';
 import 'widgets/add_new_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -9,7 +10,18 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("My Notes"), centerTitle: true),
+      appBar: AppBar(
+        title: const Text("My Notes"),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await AuthService.signOut();
+            },
+            icon: const Icon(Icons.logout),
+          ),
+        ],
+      ),
 
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
