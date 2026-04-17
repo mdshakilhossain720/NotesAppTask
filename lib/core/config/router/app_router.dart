@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:task/core/network/auth_gate.dart';
 
 import '../../../features/auth/presentation/screens/login_screen.dart';
 import '../../../features/auth/presentation/screens/register_screen.dart';
@@ -33,11 +34,11 @@ class AppRouter {
 
     routes: [
       /// Splash
-      // GoRoute(
-      //   path: Routes.splash,
-      //   pageBuilder: (context, state) =>
-      //       _platformTransitionPage(state: state, child: SignupScreen()),
-      // ),
+      GoRoute(
+      path: Routes.splash,
+      builder: (context, state) =>
+          const AuthGate(firebaseReady: true),
+    ),
 
       /// Login
       GoRoute(

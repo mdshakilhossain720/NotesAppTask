@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 import '../../../auth/presentation/screens/login_screen.dart';
+import '../../../home/presentation/screens/home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -33,7 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
       _goTo(const LoginScreen());
     } else {
-      _goTo(const HomeScreen());
+      _goTo(const HomeScreen(firebaseReady: true,));
     }
   }
 

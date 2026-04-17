@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/network/firebase_service.dart';
+
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
@@ -10,12 +12,13 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
-  final bool _loading = false;
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -40,6 +43,13 @@ class _SignupScreenState extends State<SignupScreen> {
     return null;
   }
 
+  String? _validateName(String? value) {
+    final v = value?.trim() ?? '';
+    if (v.isEmpty) return 'Enter your name';
+    if (v.length < 2) return 'Name is too short';
+    return null;
+  }
+
   String? _validateConfirm(String? value) {
     if (value != _passwordController.text) {
       return 'Passwords do not match';
@@ -47,36 +57,36 @@ class _SignupScreenState extends State<SignupScreen> {
     return _validatePassword(value);
   }
 
-  // Future<void> _submit() async {
-  //   if (!_formKey.currentState!.validate()) return;
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
 
-  //   setState(() => _loading = true);
-  //   try {
-  //     await AuthService.signUp(
-  //       email: _emailController.text.trim(),
-  //       password: _passwordController.text,
-  //     );
-  //     if (!mounted) return;
-  //     Navigator.of(context).pop();
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: const Text('Account created — you are signed in.'),
-  //         behavior: SnackBarBehavior.floating,
-  //         shape: RoundedRectangleBorder(
-  //           borderRadius: BorderRadius.circular(12),
-  //         ),
-  //       ),
-  //     );
-  //   } on FirebaseAuthException catch (e) {
-  //     if (!mounted) return;
-  //     _showError(_mapAuthError(e));
-  //   } catch (e) {
-  //     if (!mounted) return;
-  //     _showError(e.toString());
-  //   } finally {
-  //     if (mounted) setState(() => _loading = false);
-  //   }
-  // }
+    setState(() => _loading = true);
+    try {
+      await AuthService.signUp(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Account created — you are signed in.'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      _showError(_mapAuthError(e));
+    } catch (e) {
+      if (!mounted) return;
+      _showError(e.toString());
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -134,16 +144,13 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                     TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
+                    TextFormField(
+                      controller: _nameController,
+                      keyboardType: TextInputType.text,
                       textInputAction: TextInputAction.next,
                       autofillHints: const [AutofillHints.givenName],
-                      decoration: const InputDecoration(
-                        labelText: 'Name',
-                        
-                      ),
-                      validator: _validateEmail,
+                      decoration: const InputDecoration(labelText: 'Name'),
+                      validator: _validateName,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -209,14 +216,14 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     const SizedBox(height: 28),
                     FilledButton(
-                      // onPressed: _loading ? null : _submit,
+                      onPressed: _loading ? null : _submit,
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(52),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      onPressed: () {},
+
                       child: _loading
                           ? SizedBox(
                               width: 22,
