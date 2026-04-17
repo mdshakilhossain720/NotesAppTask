@@ -43,11 +43,9 @@ class HomeScreen extends ConsumerWidget {
             itemCount: notes.length,
             itemBuilder: (_, i) {
               final note = notes[i];
+              return _noteCard(note);
 
-              return ListTile(
-                title: Text(note.title),
-                subtitle: Text(note.description),
-              );
+              
             },
           );
         },
@@ -67,7 +65,7 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _noteCard() {
+  Widget _noteCard(note) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -84,16 +82,13 @@ class HomeScreen extends ConsumerWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           Text(
-            "Note Title",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            note.title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 8),
-          Text(
-            "This is a sample description of the note. It looks clean and modern UI.",
-            style: TextStyle(color: Colors.grey),
-          ),
+          const SizedBox(height: 8),
+          Text(note.description, style: const TextStyle(color: Colors.grey)),
         ],
       ),
     );

@@ -118,10 +118,18 @@ class _AddNoteScreenState extends ConsumerState<AddNoteScreen> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.cyanAccent.shade700,
+                    shape: RoundedRectangleBorder(
+                      
+                      side: const BorderSide(color: Colors.black12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   onPressed: isLoading ? null : _saveNote,
                   child: isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Save Note"),
+                      : const Text("Save Note",style: TextStyle(color: Colors.white,fontSize: 18),),
                 ),
               )
             ],
