@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/firebase_service.dart';
+import '../provider/notes_provider.dart';
 import 'widgets/add_new_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key, required this.firebaseReady});
   final bool firebaseReady;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notesAsync = ref.watch(notesStreamProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text("My Notes"),
@@ -23,19 +26,37 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
 
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: 5, // replace with provider/hive data
-        itemBuilder: (context, index) {
-          return _noteCard();
+      // body: ListView.builder(
+      //   padding: const EdgeInsets.all(16),
+      //   itemCount: 5, // replace with provider/hive data
+      //   itemBuilder: (context, index) {
+      //     return _noteCard();
+      //   },
+      // ),
+      body: notesAsync.when(
+        data: (notes) {
+          if (notes.isEmpty) {
+            return const Center(child: Text("No Notes Found"));
+          }
+
+          return ListView.builder(
+            itemCount: notes.length,
+            itemBuilder: (_, i) {
+              final note = notes[i];
+
+              return ListTile(
+                title: Text(note.title),
+                subtitle: Text(note.description),
+              );
+            },
+          );
         },
+        loading: () => const CircularProgressIndicator(),
+        error: (e, _) => Text(e.toString()),
       ),
 
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // GoRouter example:
-          // context.go('/add-note');
-
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const AddNoteScreen()),

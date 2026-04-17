@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:task/core/network/auth_gate.dart';
 
 import 'core/config/router/app_router.dart';
 import 'firebase_options.dart';
@@ -25,7 +25,7 @@ Future<void> main() async {
     debugPrint('Firebase init failed: $e\n$st');
   }
 
-  runApp(MyApp(firebaseReady: firebaseOk));
+  runApp(ProviderScope(child: MyApp(firebaseReady: firebaseOk)));
 }
 
 class MyApp extends StatelessWidget {
@@ -65,7 +65,6 @@ class MyApp extends StatelessWidget {
           color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
         ),
       ),
-       
     );
   }
 }

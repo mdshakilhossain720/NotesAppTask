@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AddNoteScreen extends StatefulWidget {
+import '../../../domain/Entity/note.dart';
+import '../../provider/notes_provider.dart';
+
+
+
+class AddNoteScreen extends ConsumerStatefulWidget {
   const AddNoteScreen({super.key});
 
   @override
-  State<AddNoteScreen> createState() => _AddNoteScreenState();
+  ConsumerState<AddNoteScreen> createState() => _AddNoteScreenState();
 }
 
-class _AddNoteScreenState extends State<AddNoteScreen> {
+class _AddNoteScreenState extends ConsumerState<AddNoteScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final titleController = TextEditingController();
   final descController = TextEditingController();
+
+  bool isLoading = false;
 
   @override
   void dispose() {
@@ -20,18 +28,36 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
     super.dispose();
   }
 
-  void _saveNote() {
-    if (_formKey.currentState!.validate()) {
-      final title = titleController.text;
-      final desc = descController.text;
+  Future<void> _saveNote() async {
+    if (!_formKey.currentState!.validate()) return;
 
-      // TODO: Save to Firebase / Hive / Riverpod
+    setState(() => isLoading = true);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Note Saved Successfully")),
+    try {
+      final note = Note(
+        id: DateTime.now().toString(),
+        title: titleController.text.trim(),
+        description: descController.text.trim(),
+        createdAt: DateTime.now(),
       );
 
-      Navigator.pop(context);
+      await ref.read(addNoteProvider)(note);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Note Saved Successfully")),
+        );
+
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -92,8 +118,10 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: _saveNote,
-                  child: const Text("Save Note"),
+                  onPressed: isLoading ? null : _saveNote,
+                  child: isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text("Save Note"),
                 ),
               )
             ],
