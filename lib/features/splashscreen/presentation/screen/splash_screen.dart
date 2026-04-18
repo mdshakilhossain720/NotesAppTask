@@ -12,37 +12,38 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-
   late Box appBox;
 
   @override
   void initState() {
     super.initState();
-    appBox = Hive.box('appBox');
-    _checkFirstTime();
+    _init();
   }
 
-  Future<void> _checkFirstTime() async {
-
-    bool isFirstTime = appBox.get('isFirstTime', defaultValue: true);
-
+  Future<void> _init() async {
     await Future.delayed(const Duration(seconds: 2));
 
+    appBox = Hive.box('appBox');
+
+    final isFirstTime = appBox.get('isFirstTime', defaultValue: true);
+
+    if (!mounted) return;
+
     if (isFirstTime) {
-      // save false
       await appBox.put('isFirstTime', false);
 
-      _goTo(const LoginScreen());
+      _navigate(const LoginScreen());
     } else {
-      _goTo(const HomeScreen(firebaseReady: true,));
+      _navigate(const HomeScreen(firebaseReady: true));
     }
   }
 
-  void _goTo(Widget screen) {
-    Navigator.pushReplacement(
+  void _navigate(Widget screen) {
+    if (!mounted) return;
+
+    Navigator.of(
       context,
-      MaterialPageRoute(builder: (_) => screen),
-    );
+    ).pushReplacement(MaterialPageRoute(builder: (_) => screen));
   }
 
   @override

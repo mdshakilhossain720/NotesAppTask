@@ -1,12 +1,16 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:task/core/network/auth_gate.dart';
+import 'package:hive/hive.dart';
 
 import '../../../features/auth/presentation/screens/login_screen.dart';
 import '../../../features/auth/presentation/screens/register_screen.dart';
+import '../../../features/home/presentation/screens/home_screen.dart';
+import '../../../features/splashscreen/presentation/screen/splash_screen.dart';
 
 class Routes {
   Routes._();
@@ -26,32 +30,67 @@ class AppRouter {
   static final GlobalKey<NavigatorState> shellNavigatorKey =
       GlobalKey<NavigatorState>();
 
+ 
+
   static final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: Routes.splash,
     debugLogDiagnostics: kDebugMode,
-    observers: [routeObserver],
 
-    routes: [
-      /// Splash
-      GoRoute(
-      path: Routes.splash,
-      builder: (context, state) =>
-          const AuthGate(firebaseReady: true),
+    refreshListenable: GoRouterRefreshStream(
+      FirebaseAuth.instance.authStateChanges(),
     ),
 
-      /// Login
+    redirect: (context, state) {
+      final box = Hive.box('appBox');
+  final isFirstTime = box.get('isFirstTime', defaultValue: true);
+      final user = FirebaseAuth.instance.currentUser;
+final isSplash = state.matchedLocation == Routes.splash;
+      final isLoggingIn =
+          state.matchedLocation == Routes.login ||
+          state.matchedLocation == Routes.signup;
+
+           /// ✅ FIRST TIME → show splash
+  if (isFirstTime) {
+    if (!isSplash) return Routes.splash;
+
+    // mark as visited AFTER entering splash
+    Future.microtask(() => box.put('isFirstTime', false));
+    return null;
+  }
+
+      // ❌ Not logged in
+      if (user == null) {
+        return isLoggingIn ? null : Routes.login;
+      }
+
+      // ✅ Logged in
+      if (isLoggingIn) {
+        return '/home';
+      }
+
+      return null;
+    },
+
+    routes: [
       GoRoute(
-        path: Routes.login,
-        pageBuilder: (context, state) =>
-            _platformTransitionPage(state: state, child: LoginScreen()),
+        path: Routes.splash,
+        builder: (context, state) => const SplashScreen(),
       ),
 
-      /// Signup
+      GoRoute(
+        path: Routes.login,
+        builder: (context, state) => const LoginScreen(),
+      ),
+
       GoRoute(
         path: Routes.signup,
-        pageBuilder: (context, state) =>
-            _platformTransitionPage(state: state, child: SignupScreen()),
+        builder: (context, state) => const SignupScreen(),
+      ),
+
+      GoRoute(
+        path: '/home',
+        builder: (context, state) => const HomeScreen(firebaseReady: true),
       ),
     ],
   );
@@ -155,5 +194,21 @@ class AppRouter {
         );
       },
     );
+  }
+}
+
+class GoRouterRefreshStream extends ChangeNotifier {
+  late final StreamSubscription _subscription;
+
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    _subscription = stream.asBroadcastStream().listen((_) {
+      notifyListeners();
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
   }
 }
